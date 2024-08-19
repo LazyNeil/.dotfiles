@@ -1,0 +1,507 @@
+#+TITLE: Emacs personal configuration
+#+AUTHOR: Neil
+#+MACRO: latest-export-date (eval (format-time-string "%F %T %z"))
+
+* General
+** Package manager
+*** Init
+#+begin_src emacs-lisp
+  (require 'package) ; load the package manager
+  (setq package-check-signature nil) ; override signature errors
+  ;; add package archives to package manager
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			   ("org"  . "https://orgmode.org/elpa/")
+			   ("gnu" . "https://elpa.gnu.org/packages/")
+			   ))
+  (package-initialize)
+  ;; pull archvies and prevent warning messages only on very first startup
+  (unless package-archive-contents
+    (progn
+      (setq warning-minimum-level :emergency) 
+      (package-refresh-contents)))
+#+end_src
+
+*** Use Package
+#+begin_src emacs-lisp
+  ;; install use-package if it doesn't exist yet
+  (unless (package-installed-p 'use-package) 
+    (package-install 'use-package))          
+  (eval-when-compile
+    (require 'use-package))
+  ;; Prevents having to use :ensure t on everything
+  (setq use-package-always-ensure t)
+#+end_src
+
+*** Compat
+#+begin_src emacs-lisp
+  ;; Required compatibility package
+  (use-package compat)
+#+end_src
+** Global Preferences
+*** Tweaks
+#+begin_src emacs-lisp
+  (global-font-lock-mode t) ; global highlighting
+  (menu-bar-mode -1) ; disable menu bar
+  (tool-bar-mode -1) ; disable tool bar
+  (scroll-bar-mode -1) ; disable scroll bar
+  (delete-selection-mode t) ; enables delete selection
+  (global-display-line-numbers-mode) ; Enable global line numbers
+  (global-visual-line-mode t) ; Enable visual-line-mode globally
+  (setq gc-cons-threshold 100000000) ; Set garbage collection threshold to improve performance (100 MB)
+  (setq read-process-output-max (* 1024 1024)) ; Set maximum amount of data read from processes to 1 MB
+  (setq inhibit-startup-screen t) ; Hide welcome page
+  (setq use-package-always-ensure t) ; Always ensure package to be installed
+  ;; Term mode
+  (unless (display-graphic-p)
+    (xterm-mouse-mode 1) ; Enable mouse in term-mode
+    ;; check out the xclip package if this doesn't work
+    (setq xterm-extra-capabilities '(getSelection setSelection)))
+  (electric-pair-mode 1) ; Auto closing pairs like () and {}
+  (global-hl-line-mode) ; Highlight the current line
+  (electric-indent-mode t) ; Auto Indent
+  (global-prettify-symbols-mode)
+#+end_src
+
+*** Hotkeys
+#+begin_src emacs-lisp
+  ;; enables ctrl+c ctrl+v ctrl+z etc..
+  (cua-mode t)
+  ;; Bind the right mouse button to open the same menu as F10
+  (defun open-menu-bar ()
+    "Open the menu bar, similar to F10."
+    (interactive)
+    (menu-bar-open))
+  ;; Bind right mouse button to show the context menu
+  (global-set-key [mouse-3] 'open-menu-bar)
+  ;; disable (ctrl+space) set mark
+  (global-unset-key (kbd "C-SPC"))
+  ;; configure SHIFT + TAB to decrease indentation
+  (define-key global-map (kbd "S-<tab>") 'indent-rigidly-left)
+  ;; keybinding configuration similar to VSCode
+  ;; save file (ctrl+s)
+  (global-set-key (kbd "C-s") 'save-buffer)
+  ;; open file (ctrl+o)
+  (global-set-key (kbd "C-o") 'find-file)
+  ;; close buffer (ctrl+w)
+  (global-set-key (kbd "C-w") 'kill-this-buffer)
+  ;; cut (ctrl+x)
+  (global-set-key (kbd "C-x") 'kill-region)
+  ;; copy (ctrl+c)
+  (global-set-key (kbd "C-c") 'copy-region-as-kill)
+  ;; paste (ctrl+v)
+  (global-set-key (kbd "C-v") 'yank)
+  ;; undo (ctrl+z)
+  (global-set-key (kbd "C-z") 'undo)
+  ;; redo (ctrl+y)
+  (global-set-key (kbd "C-y") 'redo)
+  ;; search (ctrl+f)
+  (global-set-key (kbd "C-f") 'isearch-forward)
+  ;; replace (ctrl+h)
+  (global-set-key (kbd "C-h") 'query-replace)
+  ;; toggle sidebar (ctrl+b)
+  (global-set-key (kbd "C-b") 'buffer-menu)
+  ;; go to line (ctrl+g)
+  (global-set-key (kbd "C-g") 'goto-line)
+  ;; open command palette (ctrl+shift+p)
+  (global-set-key (kbd "C-P") 'execute-extended-command)
+  ;; new file (ctrl+n)
+  (global-set-key (kbd "C-n") 'find-file-other-window)
+  ;; switch between buffers (ctrl+tab)
+  (global-set-key (kbd "C-<tab>") 'next-buffer)
+  (global-set-key (kbd "C-M-<tab>") 'previous-buffer)
+  ;; split window horizontally (ctrl+shift+alt+0)
+  (global-set-key (kbd "C-M-=") 'split-window-below)
+  ;; split window vertically (ctrl+shift+alt+1)
+  (global-set-key (kbd "C-M-!") 'split-window-right)
+  ;; close window (ctrl+shift+q)
+  (global-set-key (kbd "C-Q") 'delete-window)
+  ;; Configurar C-{ y C-} para moverte entre las ventanas
+  (global-set-key (kbd "C-{") 'windmove-left)
+  (global-set-key (kbd "C-}") 'windmove-right)
+#+end_src
+
+*** Backups
+#+begin_src emacs-lisp
+  ;; define the directory for backup files
+  (setq backup-directory-alist `(("." . ,(expand-file-name "~/.config/emacs/backup"))))
+  ;; define the directory for auto-save files
+  (setq auto-save-file-name-transforms `((".*" ,(expand-file-name "~/.config/emacs/auto-save") t)))
+  (setq create-lockfiles nil ; Disable .# files
+	;; Prevent emacs from trying to write to init.el
+	custom-file (concat user-emacs-directory "trash.el"))
+  ;; ensure the directories exist (they should be created if they don't)
+  (unless (file-exists-p "~/.config/emacs/backup")
+    (make-directory "~/.config/emacs/backup" t))
+  (unless (file-exists-p "~/.config/emacs/auto-save")
+    (make-directory "~/.config/emacs/auto-save" t))
+
+#+end_src
+
+* Style
+** Font
+#+begin_src emacs-lisp
+  (setq line-spacing 0.2)
+  (set-face-attribute 'default nil :family "Iosevka")
+  (visual-line-mode +1)
+#+end_src
+** Theme
+#+begin_src emacs-lisp
+  (use-package apropospriate-theme
+    :config 
+    (load-theme 'apropospriate-dark t))
+#+end_src
+
+** Icons
+#+begin_src emacs-lisp
+  (use-package all-the-icons
+    :if (display-graphic-p))
+#+end_src
+** Highlight TODO
+#+begin_src emacs-lisp
+(use-package hl-todo
+  :hook (prog-mode . hl-todo-mode)
+  :config
+    (setq hl-todo-keyword-faces
+        '(("TODO"   . "#FF0000")
+          ("FIXME"  . "#f9e2af")
+          ("DEBUG"  . "#A020F0")
+          ("GOTCHA" . "#a6e3a1")
+          ("STUB"   . "#1E90FF"))))
+#+end_src
+** Rainbow Mode
+This mode highlights color codes (e.g., hexadecimal values) in your code,
+allowing you to see the actual colors directly in the buffer. It is enabled
+automatically in programming modes.
+#+begin_src emacs-lisp
+(use-package rainbow-mode
+  :hook (prog-mode . rainbow-mode))
+#+end_src
+** Rainbow Delimiters
+This mode highlights parentheses, brackets, and braces with different colors
+based on their nesting level, which makes it easier to match and navigate
+through nested structures in your code. It is enabled automatically in
+programming modes.
+#+begin_src emacs-lisp
+(use-package rainbow-delimiters 
+  :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+** Treesitter
+#+begin_src emacs-lisp
+;; levels from 1 - 4, higher numbers being more "colorful"
+(setq-default treesit-font-lock-level 4)
+
+;; where to source the langs
+(setq treesit-language-source-alist
+  '((nix "https://github.com/nix-community/tree-sitter-nix")
+    (c "https://github.com/tree-sitter/tree-sitter-c")
+    (c-sharp "https://github.com/tree-sitter/tree-sitter-c-sharp")
+    (python "https://github.com/tree-sitter/tree-sitter-python")
+    (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+    (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+    (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+    (json "https://github.com/tree-sitter/tree-sitter-json")
+    (toml "https://github.com/tree-sitter/tree-sitter-toml")
+    (yaml "https://github.com/ikatyang/tree-sitter-yaml")
+    (elixir "https://github.com/elixir-lang/tree-sitter-elixir")
+    (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+    (rust "https://github.com/tree-sitter/tree-sitter-rust")
+    (css "https://github.com/tree-sitter/tree-sitter-css")
+    (go "https://github.com/tree-sitter/tree-sitter-go")
+    (gomod "https://github.com/camdencheek/tree-sitter-go-mod")
+    (java "https://github.com/tree-sitter/tree-sitter-java")
+    (bash "https://github.com/tree-sitter/tree-sitter-bash")))
+
+;; Org mode src blocks for treesitter
+(setq org-src-lang-modes 
+  '(("go" . go-ts)
+    ("cpp" . c++-ts)
+    ("toml" . toml-ts)
+    ("yaml" . toml-ts)
+    ("json" . json-ts)
+    ("bash" . bash-ts)
+    ("rust" . rust-ts)
+    ("C" . c-ts)
+    ("nix" . nix-ts)
+    ("python" . python-ts)
+    ("js" . js-ts)
+    ("ts" . typescript-ts)
+    ("java" . java-ts)
+    ("css" . css-ts)))
+
+;; auto install any missing defined langs
+(dolist (lang treesit-language-source-alist)
+  (unless (treesit-language-available-p (car lang))
+    (treesit-install-language-grammar (car lang))))
+
+;; maps the ts modes to normal modes
+(mapc #'(lambda (mode-remap) (add-to-list 'major-mode-remap-alist mode-remap))
+  '((c-mode . c-ts-mode)
+    (c++-mode . c++-ts-mode)
+    (sh-mode . bash-ts-mode)
+    (css-mode . css-ts-mode)
+    (python-mode . python-ts-mode)
+    (javascript-mode . js-ts-mode)
+    (java-mode . java-ts-mode)))
+
+;; for modes that have an existing ts mode but no existing normal mode
+(mapc #'(lambda (auto-mode) (add-to-list 'auto-mode-alist auto-mode))
+  '(("\\.go\\'" . go-ts-mode)
+    ("\\.rs\\'" . rust-ts-mode)
+    ("\\.toml\\'" . toml-ts-mode)
+    ("\\.yml\\'" . yaml-ts-mode)
+    ("\\.yaml\\'" . yaml-ts-mode)
+    ("\\.json\\'" . json-ts-mode)
+    ("\\.ts\\'" . typescript-ts-mode)
+    ("\\.tsx\\'" . tsx-ts-mode)))
+
+;; If you need to override the names of the expected libraries, defualt emacs looks for libtree-sitter-${LANG_NAME}
+;; (setq treesit-load-name-override-list
+;;    '((cc "libtree-sitter-c")
+;;      (gomod "libtree-sitter-go")))
+#+end_src
+** Additional touches
+#+begin_src emacs-lisp
+(let ((bg "#181825"))
+  (add-hook 'post-command-hook #'(lambda ()
+    (set-cursor-color (if (derived-mode-p 'dired-mode) "#89b4fa" "#cba6f7"))))
+  (set-face-attribute 'line-number-current-line nil :foreground "#cba6f7")
+  (set-face-attribute 'org-block nil :background "#1e1e2e") ; src blocks
+  (set-face-attribute 'default nil :background bg) ; emacs background
+  (set-face-attribute 'org-hide nil :foreground bg) ; asterisks preceding org headings
+  (set-face-attribute 'fringe nil :background bg) ; fringes/borders on the sides
+  ;; (set-face-attribute 'org-block-begin-line nil :background bg) ; the #+begin_src and #+end_src bits
+  (set-face-attribute 'line-number nil :background bg) ; line number background
+  (set-face-attribute 'line-number-current-line nil :background bg) ; current line number
+  (set-face-attribute 'mode-line nil :background "#11111B") ; mode line background
+  (set-face-attribute 'mode-line-inactive nil :background "#11111B")) ; mode line background on inactive buffers
+  (set-face-attribute 'vertical-border nil :background "#181825" :foreground "#11111B")
+#+end_src
+* Languages
+** General config
+#+begin_src emacs-lisp
+  (use-package format-all
+    :preface
+    (defun ian/format-code ()
+      "Auto-format whole buffer."
+      (interactive)
+      (if (derived-mode-p 'prolog-mode)
+	  (prolog-indent-buffer)
+	(format-all-buffer)))
+    :config
+    (global-set-key (kbd "M-F") #'ian/format-code)
+    (add-hook 'prog-mode-hook #'format-all-ensure-formatter))
+#+end_src
+** Programming Modes
+** Python Mode
+#+begin_src emacs-lisp
+(add-hook 'python-ts-mode-hook #'(lambda()
+  (setq tab-width 4
+        indent-tabs-mode nil)))
+#+end_src
+** Javascript Mode
+#+begin_src emacs-lisp
+(add-hook 'js-ts-mode-hook #'(lambda()
+  ;; (setq-local eglot-ignored-server-capabilities '(:hoverProvider))
+  (setq tab-width 2
+        indent-tabs-mode nil
+        js-indent-level 2)))
+#+end_src
+** TypeScript Mode
+#+begin_src emacs-lisp
+(add-hook 'typescript-ts-mode-hook #'(lambda()
+  ;; (setq-local eglot-ignored-server-capabilities '(:hoverProvider))
+  (setq tab-width 2
+        indent-tabs-mode nil)))
+#+end_src
+** Vue Mode
+#+begin_src emacs-lisp 
+(use-package vue-mode 
+  :mode "\\.vue\\'" 
+  :config 
+  (add-hook 'vue-mode-hook #'(lambda()
+    (setq tab-width 2
+          indent-tabs-mode nil))))
+#+end_src
+** Go Mode
+#+begin_src emacs-lisp
+(add-hook 'go-ts-mode-hook #'(lambda()
+  (setq tab-width 4
+        go-ts-mode-indent-offset 4
+        indent-tabs-mode nil)))
+#+end_src
+** Lua Mode
+#+begin_src emacs-lisp
+(use-package lua-mode 
+  :mode "\\.lua\\'"
+  :config
+  (add-hook 'lua-mode-hook #'(lambda()
+    (setq tab-width 4))))
+#+end_src
+** Elixir Mode
+#+begin_src emacs-lisp
+(use-package elixir-ts-mode :mode "\\.exs\\'")
+#+end_src
+** Rust Mode
+#+begin_src emacs-lisp
+(add-hook 'rust-ts-mode-hook #'(lambda()
+  (setq tab-width 4)))
+#+end_src
+** PowerShell Mode
+#+begin_src emacs-lisp
+(use-package powershell :mode ("\\.ps1\\'" . powershell-mode))
+#+end_src
+** Markdown Mode
+#+begin_src emacs-lisp
+(use-package markdown-mode :mode "\\.md\\'")
+#+end_src
+** PHP Mode
+#+begin_src emacs-lisp
+  ;; PHP highlights
+  (use-package php-mode
+    :mode ("\\.php\\'" . php-mode))
+  (use-package phpunit)
+#+end_src
+** ORG
+#+begin_src emacs-lisp
+  (require 'org)
+  (add-hook 'org-mode-hook (global-display-line-numbers-mode 0))
+
+  ;; Inline images
+  (defun jl/org-resize-inline ()
+    (when (derived-mode-p 'org-mode)
+      (save-excursion
+	(save-restriction
+	  (goto-char (point-min))
+	  ;; Check if the org buffer even has images first
+	  (when (re-search-forward "\\[\\[.*\\(png\\|jpe?g\\|gif\\|webp\\)\\]\\]" nil :noerror)
+	    (setq org-image-actual-width (round (* (window-pixel-width) 0.4)))
+	    (setq-local scroll-conservatively 0)
+	    (org-display-inline-images t t))))))
+  (add-hook 'org-mode-hook #'jl/org-resize-inline)
+  (add-hook 'after-save-hook #'jl/org-resize-inline)
+
+  ;; Olivetti (Set a desired text body width to automatically resize window margins to keep the text comfortably in the middle of the window)
+  (use-package olivetti
+    :hook ((org-mode org-agenda-mode) . olivetti-mode)
+    :config
+    (setq-default olivetti-body-width 0.80)
+    (remove-hook 'olivetti-mode-on-hook 'visual-line-mode))
+
+  (use-package org-modern
+    :custom
+    (org-modern-table nil)
+    (org-modern-block-name '("" . "")) ; or other chars; so top bracket is drawn promptly
+    :hook
+    (org-mode . org-modern-mode)
+    (org-agenda-finalize . org-modern-agenda))
+
+  (modify-all-frames-parameters
+   '((right-divider-width . 40)
+     (internal-border-width . 40)))
+  (dolist (face '(window-divider
+		  window-divider-first-pixel
+		  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+
+  (setq
+   ;; Edit settings
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+
+   ;; Agenda styling
+   org-agenda-tags-column 0
+   org-agenda-block-separator ?─
+   org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000)
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+   org-agenda-current-time-string
+   "◀── now ─────────────────────────────────────────────────")
+
+  ;; Ellipsis styling
+  (setq org-ellipsis "…")
+  (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil)
+  
+  ;; Choose font
+  (set-face-attribute 'default nil :family "Iosevka")
+  (global-org-modern-mode)
+#+end_src
+	  
+** GLSL mode
+#+begin_src emacs-lisp
+  ;; Instala y configura glsl-mode
+  (use-package glsl-mode
+    :mode "\\.glsl\\'")
+#+end_src
+
+** LSP Initialize
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :config
+    (setq lsp-prefer-flymake nil)
+    :hook ((php-mode python-mode js-mode web-mode) . lsp)
+    :commands lsp)
+  (use-package lsp-ui
+    :requires lsp-mode flycheck
+    :config
+    (setq lsp-ui-doc-enable t
+	  lsp-ui-doc-use-childframe t
+	  lsp-ui-doc-position ‘top
+	  lsp-ui-doc-include-signature t
+	  lsp-ui-sideline-enable nil
+	  lsp-ui-flycheck-enable t
+	  lsp-ui-flycheck-list-position ‘right
+	  lsp-ui-flycheck-live-reporting t
+	  lsp-ui-peek-enable t
+	  lsp-ui-peek-list-width 60
+	  lsp-ui-peek-peek-height 25
+	  lsp-ui-sideline-enable nil)
+    (add-hook ‘lsp-mode-hook ‘lsp-ui-mode))
+#+end_src
+
+* Extentions
+** IDO Configuration
+#+begin_src emacs-lisp
+  (setq ido-enable-flex-matching t) ; Enables flexible matching
+  (setq ido-everywhere t) ; Activates ido in all file and buffer selection commands
+  (ido-mode 1) ; Enables ido mode
+#+end_src
+** Dashboard
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :if (< (length command-line-args) 2)
+    :config (dashboard-setup-startup-hook))
+
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-icon-type 'all-the-icons) ; use `all-the-icons' package
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-heading-icons '((recents   . "history")
+				  (bookmarks . "bookmark")
+				  (agenda    . "calendar")
+				  (projects  . "rocket")
+				  (registers . "database")))
+#+end_src
+** Flycheck
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :init
+    (add-hook 'after-init-hook #'global-flycheck-mode)); Activates flycheck globally
+#+end_src
+** Company
+Auto completion Package
+#+begin_src emacs-lisp
+  (use-package company
+    :config
+    (setq company-idle-delay 0.2)
+    (global-company-mode 1)
+    (global-set-key (kbd "C-SPC") 'company-complete))
+#+end_src
