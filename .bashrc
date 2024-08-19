@@ -123,9 +123,9 @@ export LANG=es_ES.UTF-8
 
 # Preferred editor for local and remote sessions
 if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR='vim'
+  export EDITOR='emacs'
 else
-  export EDITOR='nvim'
+  export EDITOR='emacs'
 fi
 
 # Import colorscheme from 'wal' asynchronously
