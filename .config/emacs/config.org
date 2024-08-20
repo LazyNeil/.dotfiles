@@ -4,7 +4,6 @@
 
 * General
 ** Package manager
-*** Init
 #+begin_src emacs-lisp
   (require 'package) ; load the package manager
   (setq package-check-signature nil) ; override signature errors
@@ -19,21 +18,16 @@
     (progn
       (setq warning-minimum-level :emergency) 
       (package-refresh-contents)))
-#+end_src
 
-*** Use Package
-#+begin_src emacs-lisp
   ;; install use-package if it doesn't exist yet
   (unless (package-installed-p 'use-package) 
     (package-install 'use-package))          
   (eval-when-compile
     (require 'use-package))
+
   ;; Prevents having to use :ensure t on everything
   (setq use-package-always-ensure t)
-#+end_src
 
-*** Compat
-#+begin_src emacs-lisp
   ;; Required compatibility package
   (use-package compat)
 #+end_src
@@ -44,9 +38,12 @@
   (menu-bar-mode -1) ; disable menu bar
   (tool-bar-mode -1) ; disable tool bar
   (scroll-bar-mode -1) ; disable scroll bar
+  (display-time) ; display clock
   (delete-selection-mode t) ; enables delete selection
   (global-display-line-numbers-mode) ; Enable global line numbers
   (global-visual-line-mode t) ; Enable visual-line-mode globally
+  (prefer-coding-system 'utf-8-unix)
+  (set-default-coding-systems 'utf-8-unix)
   (setq gc-cons-threshold 100000000) ; Set garbage collection threshold to improve performance (100 MB)
   (setq read-process-output-max (* 1024 1024)) ; Set maximum amount of data read from processes to 1 MB
   (setq inhibit-startup-screen t) ; Hide welcome page
@@ -291,14 +288,13 @@ programming modes.
     (global-set-key (kbd "M-F") #'ian/format-code)
     (add-hook 'prog-mode-hook #'format-all-ensure-formatter))
 #+end_src
-** Programming Modes
-** Python Mode
+** Python
 #+begin_src emacs-lisp
 (add-hook 'python-ts-mode-hook #'(lambda()
   (setq tab-width 4
         indent-tabs-mode nil)))
 #+end_src
-** Javascript Mode
+** Javascript
 #+begin_src emacs-lisp
 (add-hook 'js-ts-mode-hook #'(lambda()
   ;; (setq-local eglot-ignored-server-capabilities '(:hoverProvider))
@@ -306,14 +302,14 @@ programming modes.
         indent-tabs-mode nil
         js-indent-level 2)))
 #+end_src
-** TypeScript Mode
+** TypeScript
 #+begin_src emacs-lisp
 (add-hook 'typescript-ts-mode-hook #'(lambda()
   ;; (setq-local eglot-ignored-server-capabilities '(:hoverProvider))
   (setq tab-width 2
         indent-tabs-mode nil)))
 #+end_src
-** Vue Mode
+** Vue
 #+begin_src emacs-lisp 
 (use-package vue-mode 
   :mode "\\.vue\\'" 
@@ -322,14 +318,14 @@ programming modes.
     (setq tab-width 2
           indent-tabs-mode nil))))
 #+end_src
-** Go Mode
+** Go
 #+begin_src emacs-lisp
 (add-hook 'go-ts-mode-hook #'(lambda()
   (setq tab-width 4
         go-ts-mode-indent-offset 4
         indent-tabs-mode nil)))
 #+end_src
-** Lua Mode
+** Lua
 #+begin_src emacs-lisp
 (use-package lua-mode 
   :mode "\\.lua\\'"
@@ -337,35 +333,40 @@ programming modes.
   (add-hook 'lua-mode-hook #'(lambda()
     (setq tab-width 4))))
 #+end_src
-** Elixir Mode
+** Elixir
 #+begin_src emacs-lisp
 (use-package elixir-ts-mode :mode "\\.exs\\'")
 #+end_src
-** Rust Mode
+** Rust
 #+begin_src emacs-lisp
 (add-hook 'rust-ts-mode-hook #'(lambda()
   (setq tab-width 4)))
 #+end_src
-** PowerShell Mode
+** PowerShell
 #+begin_src emacs-lisp
 (use-package powershell :mode ("\\.ps1\\'" . powershell-mode))
 #+end_src
-** Markdown Mode
+** Markdown
 #+begin_src emacs-lisp
 (use-package markdown-mode :mode "\\.md\\'")
 #+end_src
-** PHP Mode
+** PHP
 #+begin_src emacs-lisp
   ;; PHP highlights
   (use-package php-mode
     :mode ("\\.php\\'" . php-mode))
   (use-package phpunit)
 #+end_src
+** LaTeX
+#+begin_src emacs-lisp
+  (require 'ox-latex)
+  (unless (boundp 'org-latex-classes)
+    (setq org-latex-classes nil))
+#+end_src
 ** ORG
 #+begin_src emacs-lisp
   (require 'org)
   (add-hook 'org-mode-hook (global-display-line-numbers-mode 0))
-
   ;; Inline images
   (defun jl/org-resize-inline ()
     (when (derived-mode-p 'org-mode)
@@ -390,7 +391,7 @@ programming modes.
   (use-package org-modern
     :custom
     (org-modern-table nil)
-    (org-modern-block-name '("" . "")) ; or other chars; so top bracket is drawn promptly
+    (org-modern-block-name '("" . ""))
     :hook
     (org-mode . org-modern-mode)
     (org-agenda-finalize . org-modern-agenda))
@@ -430,19 +431,29 @@ programming modes.
   ;; Ellipsis styling
   (setq org-ellipsis "…")
   (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil)
-  
+
   ;; Choose font
   (set-face-attribute 'default nil :family "Iosevka")
+  ;; Toggles ORG Modern mode
+  (global-set-key (kbd "M-o") 'org-modern-mode)
   (global-org-modern-mode)
 #+end_src
 	  
-** GLSL mode
+** GLSL
 #+begin_src emacs-lisp
   ;; Instala y configura glsl-mode
   (use-package glsl-mode
-    :mode "\\.glsl\\'")
+  :ensure t
+  :mode (("\\.glsl\\'" . glsl-mode)
+	 ("\\.vert\\'" . glsl-mode)
+	 ("\\.frag\\'" . glsl-mode)
+	 ("\\.geom\\'" . glsl-mode)
+	 ("\\.comp\\'" . glsl-mode)
+	 ("\\.rgen\\'" . glsl-mode)
+	 ("\\.rchit\\'" . glsl-mode)
+	 ("\\.rmiss\\'" . glsl-mode))
+  )
 #+end_src
-
 ** LSP Initialize
 #+begin_src emacs-lisp
   (use-package lsp-mode
@@ -499,9 +510,14 @@ programming modes.
 ** Company
 Auto completion Package
 #+begin_src emacs-lisp
+  (use-package company-c-headers)
   (use-package company
+    :defer t
     :config
     (setq company-idle-delay 0.2)
     (global-company-mode 1)
     (global-set-key (kbd "C-SPC") 'company-complete))
+  (use-package company-glsl
+    :defer t
+    :after company)
 #+end_src
