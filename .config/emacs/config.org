@@ -34,11 +34,13 @@
 ** Global Preferences
 *** Tweaks
 #+begin_src emacs-lisp
+  (setq display-time-default-load-average nil)
+  (setq display-time-format "%I:%M")
+  (display-time-mode)
   (global-font-lock-mode t) ; global highlighting
   (menu-bar-mode -1) ; disable menu bar
   (tool-bar-mode -1) ; disable tool bar
   (scroll-bar-mode -1) ; disable scroll bar
-  (display-time) ; display clock
   (delete-selection-mode t) ; enables delete selection
   (global-display-line-numbers-mode) ; Enable global line numbers
   (global-visual-line-mode t) ; Enable visual-line-mode globally
@@ -459,7 +461,7 @@ programming modes.
   (use-package lsp-mode
     :config
     (setq lsp-prefer-flymake nil)
-    :hook ((php-mode python-mode js-mode web-mode) . lsp)
+    :hook ((php-mode python-mode js-mode web-mode glsl-mode) . lsp)
     :commands lsp)
   (use-package lsp-ui
     :requires lsp-mode flycheck
