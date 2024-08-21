@@ -38,7 +38,7 @@ reveal = [
 	{ run = '''exiftool "$1"; echo "Press enter to exit"; read _''', block = true, desc = "Show EXIF", for = "unix" },
 ]
 extract = [
-	{ run = 'unar "$1"', desc = "Extract here", for = "unix" },
+	{ run = 'unp "$1"', desc = "Extract here", for = "unix" },
 ]
 play = [
 	{ run = 'mpv "$@"', orphan = true, for = "unix" },
@@ -46,11 +46,11 @@ play = [
 ]
 
 pdf = [
-  { run = 'zathura "$@"', orphan = true, desc = "zathura", for = "unix"},
+  { run = 'zathura "$1"', orphan = true, desc = "zathura", for = "unix"},
 ]
 
 exe = [
-  { run = 'wine "$@"', orphan = true, desc = "wine", for = "linux"}
+  { run = 'wine "$1"', orphan = true, desc = "wine", for = "linux"}
 ]
 
 [open]
