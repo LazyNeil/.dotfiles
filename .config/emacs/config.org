@@ -366,6 +366,7 @@ programming modes.
   (require 'ox-latex)
   (unless (boundp 'org-latex-classes)
     (setq org-latex-classes nil))
+  (setq org-latex-create-formula-image-program 'dvipng)
 #+end_src
 ** ORG
 #+begin_src emacs-lisp
@@ -463,7 +464,7 @@ programming modes.
       (use-package lsp-mode
 	:config
 	(setq lsp-prefer-flymake nil
-	      lsp-glsl-server-command '("glsl-language-server" "--stdio"))
+	      lsp-glsl-executable '("glslls" "--stdin" "--target-env" "opengl4.5"))
 	:hook ((php-mode python-mode js-mode web-mode glsl-mode) . lsp)
 	:commands lsp)
       (use-package lsp-ui
