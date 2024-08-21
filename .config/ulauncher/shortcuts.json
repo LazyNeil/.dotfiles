@@ -1,0 +1,32 @@
+{
+    "ad07e1d3-9254-4492-aa99-070765f5f5bf": {
+        "id": "ad07e1d3-9254-4492-aa99-070765f5f5bf",
+        "name": "Google Search",
+        "keyword": "g",
+        "cmd": "https://google.com/search?q=%s",
+        "icon": "/usr/share/ulauncher/media/google-search-icon.png",
+        "is_default_search": true,
+        "run_without_argument": false,
+        "added": 1724196819.9804127
+    },
+    "245aa73b-cfc4-4b90-abc4-f9868c1020d5": {
+        "id": "245aa73b-cfc4-4b90-abc4-f9868c1020d5",
+        "name": "Wikipedia",
+        "keyword": "wiki",
+        "cmd": "https://en.wikipedia.org/wiki/%s",
+        "icon": "/usr/share/ulauncher/media/wikipedia-icon.png",
+        "is_default_search": true,
+        "run_without_argument": false,
+        "added": 1724196819.98044
+    },
+    "95cf9e78-9cfd-4967-be7f-0912cf46c06f": {
+        "id": "95cf9e78-9cfd-4967-be7f-0912cf46c06f",
+        "name": "GLSL",
+        "keyword": "glsl",
+        "cmd": "#!/bin/bash\nkitty --title \"glslViewer\" glslViewer \"$@\"",
+        "icon": null,
+        "is_default_search": false,
+        "run_without_argument": false,
+        "added": 1724253834.625363
+    }
+}
