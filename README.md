@@ -5,7 +5,7 @@
 - You'll need the following packages
 
 ```
-wl-clipboard grim grimblast-git hyprpicker pywal-16-colors zathura zathura-pdf-poppler kitty xclip xsel fzf emacs yazi btop bat lsd wofi swww waypaper ttf-all-the-icons ttf-droid ttf-liberation noto-fonts-emoji
+wl-clipboard grim grimblast-git hyprpicker pywal-16-colors zathura zathura-pdf-poppler kitty xclip xsel fzf emacs yazi btop bat lsd wofi swww waypaper ttf-all-the-icons ttf-droid ttf-liberation noto-fonts-emoji udiskie ulauncher
 ```
 
 - Optionally
