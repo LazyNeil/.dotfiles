@@ -1,0 +1,13 @@
+default-timeout=3600
+background-color=#0F0F17
+text-color=#A1BDCE
+border-color=#282A36
+
+[urgency=low]
+border-color=#282A36
+
+[urgency=normal]
+border-color=#27272E
+
+[urgency=high]
+border-color=#FF5555
